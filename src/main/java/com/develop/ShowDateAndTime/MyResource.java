@@ -6,10 +6,12 @@ import java.time.*;
 import java.time.format.*;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 
 /** Example resource class hosted at the URI path "/myresource"
  */
-@Path("/myresource")
+@Path("/")
 public class MyResource {
     
     /** Method processing HTTP GET requests, producing "text/plain" MIME media
@@ -22,5 +24,13 @@ public class MyResource {
     	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     	return "Today's date and time : "+LocalDateTime.now().format(formatter);
       //  return "Hi there!";
+    }
+    
+    @GET
+    @Path("/stock")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getStock(@QueryParam("company") String param ){
+    	return JsonResource.getJsonInfo(param);
+    	
     }
 }
