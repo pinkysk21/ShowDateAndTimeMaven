@@ -12,12 +12,9 @@ public static String apikey="LRHG6PQ9KT10BWFE";
 	public static  String getJsonInfo(String stockvalue) {
 		StringBuilder strBuf = new StringBuilder();
 		try {
-			 URL url =  
-		             new URL("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol="+stockvalue+"&apikey="+apikey); 
-		     HttpURLConnection con = 
-		                        (HttpURLConnection) url.openConnection(); 
-		  
-		                // set the request method and properties. 
+			 URL url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol="+stockvalue+"&apikey="+apikey); 
+		     HttpURLConnection con = (HttpURLConnection) url.openConnection(); 
+		     // set the request method and properties. 
 		     con.setRequestMethod("GET"); 
 		     BufferedReader   reader = new BufferedReader(new InputStreamReader(con.getInputStream(),"utf-8"));
 		     String output = null;  
@@ -26,7 +23,7 @@ public static String apikey="LRHG6PQ9KT10BWFE";
 		     con.disconnect();
 		     }
 		 catch(IOException e){  
-            e.printStackTrace();   
+              e.printStackTrace();   
          }
 		 return strBuf.toString();
 }
