@@ -5,6 +5,7 @@ import javax.ws.rs.GET;
 import java.time.*;
 import java.time.format.*;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -26,11 +27,12 @@ public class MyResource {
       //  return "Hi there!";
     }
     
+    
     @GET
     @Path("/stock")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getStock(@QueryParam("company") String param ){
-    	return JsonResource.getJsonInfo(param);
+    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_PLAIN})
+    public String getStock(@QueryParam("id") String id,@QueryParam("company") String param ,@QueryParam("u") String name ,@QueryParam("p") String pass) throws Exception{
+    	return FindTheValue.find(param,name,pass,id);
     	
     }
 }
