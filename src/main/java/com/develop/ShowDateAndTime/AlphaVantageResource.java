@@ -15,28 +15,41 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-public class JsonResource {
+public class AlphaVantageResource {
 	public static String apikey = "LRHG6PQ9KT10BWFE";
 
-	public static String getJsonInfo(String stockvalue) {
+	public static String getDailyJsonInfo(String stockvalue) {
+		String dailyUrl="https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + stockvalue
+				+ "&apikey=" + apikey;
+		return GetResponseFromAlpha(dailyUrl);
+	}
+
+	public static String getIntraDailyJson(String stockvalue) {
+		String intraDailyUrl="https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol="+stockvalue+"&interval=5min&apikey="+apikey;
+		return GetResponseFromAlpha(intraDailyUrl);
+	}
+
+	private static String GetResponseFromAlpha(String currentUrl) {
 		StringBuilder strBuf = new StringBuilder();
 		try {
-			URL url = new URL("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + stockvalue
-					+ "&apikey=" + apikey);
+			URL url = new URL(currentUrl);
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			// set the request method and properties.
 			con.setRequestMethod("GET");
 			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+			
 			String output = null;
 			while ((output = reader.readLine()) != null)
 				strBuf.append(output);
 			con.disconnect();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return strBuf.toString();
 	}
-	
+
+	/*
 	public static String getIntraDailyJson(String stockvalue) throws IOException {
 
 
@@ -60,13 +73,13 @@ public class JsonResource {
             System.out.println(response.getStatusLine().getStatusCode());   // 200
             System.out.println(response.getStatusLine().getReasonPhrase()); // OK
             System.out.println(response.getStatusLine().toString());        // HTTP/1.1 200 OK
-				 */
-
+	 */
+	/*
 				HttpEntity entity = response.getEntity();
 				if (entity != null) {
 					// return it as a String
 					result = EntityUtils.toString(entity);
-					
+
 				}
 
 			} finally {
@@ -78,6 +91,8 @@ public class JsonResource {
 		}
 
 	}
+	 */
 
-	
+
+
 }
