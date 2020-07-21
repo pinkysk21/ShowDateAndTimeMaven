@@ -30,8 +30,10 @@ public class SqlDAL {
 			val=rs.next();
 		}
 		finally {
-			st.close();
-			con.close();			
+			if(con!=null)
+				con.close();
+			if(st!=null)
+			    st.close();		
 		}
 		return val;
 	}
@@ -42,36 +44,34 @@ public class SqlDAL {
 		con = DriverManager.getConnection(url,uname,password);
 		st=con.createStatement();
 	}
+	
+	private static void StopConnection() throws ClassNotFoundException, SQLException
+	{
+		if(st!=null && !st.isClosed())
+		    st.close();
+		
+		if(con!=null && !con.isClosed())
+			con.close();
+	}
 
-	public static String retrieveDaily(String company) throws SQLException, ClassNotFoundException {
-		String value="";
+	public static StockDetails retrieveDaily(String company) throws SQLException, ClassNotFoundException 
+	{
 		try {
 			StartConnection();
-			rs=st.executeQuery("Select * from StockDetails where company='"+company+"'");
-
+			ResultSet rs=st.executeQuery("Select * from StockDetails where company='"+company+"'");
+			
+			StockDetails sd=new StockDetails();
+			sd.setCompany(company);
+			
 			if(rs.next()) {
-				StockDetails sd=new StockDetails();
-				sd.setCompany(rs.getString(1));
 				sd.setDetails(rs.getString(2));
 				sd.setLastAccess(rs.getObject(3, LocalDateTime.class));
-				value=sd.dailyAccess(sd,company);
-				
 			}
-			else {
-				value=JsonResource.getJsonInfo(company);
-				String sql=	"Insert into StockDetails(company,details,lastAccess) values('"+company+"','"+value+"',now())";
-				st.executeUpdate(sql);
-			}
+			return sd;
 		}
 		finally {
-			
-			if(con!=null)
-				con.close();
-			if(st!=null)
-			    st.close();
-			
+			StopConnection();
 		}
-		return value;
 	}
 	
 	public static void queryUpdate(String sql) throws SQLException {
@@ -87,33 +87,75 @@ public class SqlDAL {
 		}
 		return;
 	}
+	
+	public static void updateOrInsertDaily(boolean isInsert, StockDetails stockDetails) throws SQLException, ClassNotFoundException {
+		try {
+			String sql="";
+			StartConnection();
+			//If database information is not present
+			if(isInsert)
+			{
+				sql = "Insert into StockDetails(company,details,lastAccess) values('"+stockDetails.getCompany()+"','"+stockDetails.getDetails()+"',now())";
+			}
+			//If database information is expired
+			else
+			{
+				sql = "Update StockDetails set details='"+stockDetails.getDetails()+"',lastAccess=now() where company='"+stockDetails.getCompany()+"'";
+			}
+			st.executeUpdate(sql);
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally {
+			StopConnection();
+		}
+		return;
+	}
 
-	public static  String retrieveIntraDaily(String company) throws SQLException {
-		String value="";
+	public static void updateOrInsertIntraDaily(boolean isInsert, StockDetails stockDetails) throws SQLException, ClassNotFoundException {
+		try {
+			String sql="";
+			StartConnection();
+			//If database information is not present
+			if(isInsert)
+			{
+				sql = "Insert into StockDetails(company,intradetails,intralastAccess) values('"+stockDetails.getCompany()+"','"+stockDetails.getIntradetails()+"',now())";
+			}
+			//If database information is expired
+			else
+			{
+				sql = "Update StockDetails set intradetails='"+stockDetails.getIntradetails()+"',intralastAccess=now() where company='"+stockDetails.getCompany()+"'";
+			}
+			st.executeUpdate(sql);
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally {
+			StopConnection();
+		}
+		return;
+	}
+	public static  StockDetails retrieveIntraDaily(String company) throws SQLException, ClassNotFoundException {
+		
 		try {
 			StartConnection();
 			rs=st.executeQuery("Select * from StockDetails where company='"+company+"'");
-
+			StockDetails sd=new StockDetails();
+			sd.setCompany(company);
 			if(rs.next()) {
-
-				StockDetails sd=new StockDetails();
-				sd.setCompany(rs.getString(1));
 				sd.setIntradetails(rs.getString(2));
 				sd.setIntralastAccess(rs.getObject(3, LocalDateTime.class));
-				value=sd.intradailyAccess(sd,company);
+				
 			}
-			else {
-				value=JsonResource.getIntraDailyJson(company);
-				String sql=	"Insert into StockDetails(company,intradetails,intralastAccess) values('"+company+"','"+value+"',now())";
-				st.executeUpdate(sql);
-			}
+			return sd;
 		}
 		finally {
-			if(con!=null)
-				con.close();
-			if(st!=null)
-			    st.close();
-			return value;
+			StopConnection();
+			
 		}
 
 	}

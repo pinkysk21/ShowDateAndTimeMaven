@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import com.develop.ShowDateAndTime.JsonResource;
+import com.develop.ShowDateAndTime.AlphaVantageResource;
 import com.develop.ShowDateAndTime.SqlDAL;
 
 public class StockDetails {
@@ -44,40 +44,6 @@ public class StockDetails {
 		this.intralastAccess = intralastAccess;
 	}
 	
-	public String dailyAccess(StockDetails stockDetails,String company) throws SQLException {
-		String value="";
-		long diff=0;
-		if(stockDetails.getLastAccess()!=null) {
-			diff=Duration.between(stockDetails.getLastAccess(), LocalDateTime.now()).toHours();
-		}
-		if(stockDetails.getLastAccess()==null||diff>=24) {
-			value=JsonResource.getJsonInfo(company);
-			String sql=	"Update StockDetails set details='"+value+"',lastAccess=now() where company='"+company+"'";
-			SqlDAL.queryUpdate(sql);
-			
-		}
-		else {
-			value=stockDetails.getDetails();
-		}
-		return value;
-	}
 	
-	public String intradailyAccess(StockDetails stockDetails,String company) throws SQLException {
-		String value="";
-		long diff=0;
-		if(stockDetails.getIntralastAccess()!=null) {
-			diff=Duration.between(stockDetails.getLastAccess(), LocalDateTime.now()).toHours();
-		}
-		if(stockDetails.getIntralastAccess()==null||diff>=24) {
-			value=JsonResource.getJsonInfo(company);
-			String sql=	"Update StockDetails set intradetails='"+value+"',intralastAccess=now() where company='"+company+"'";
-			SqlDAL.queryUpdate(sql);
-			
-		}
-		else {
-			value=stockDetails.getDetails();
-		}
-		return value;
-	}
 	
 }

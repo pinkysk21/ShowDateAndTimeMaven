@@ -15,10 +15,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-public class JsonResource {
+public class AlphaVantageResource {
 	public static String apikey = "LRHG6PQ9KT10BWFE";
 
-	public static String getJsonInfo(String stockvalue) {
+	public static String getDailyJsonInfo(String stockvalue) {
 		String dailyUrl="https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + stockvalue
 				+ "&apikey=" + apikey;
 		return GetResponseFromAlpha(dailyUrl);

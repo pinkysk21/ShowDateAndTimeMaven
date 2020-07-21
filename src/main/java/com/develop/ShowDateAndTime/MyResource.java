@@ -10,6 +10,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import com.develop.ShowDateAndTime.BusinessLayer.StockAccess;
+import com.develop.ShowDateAndTime.DataAccessObjects.StockDetails;
+
 /** Example resource class hosted at the URI path "/myresource"
  */
 @Path("/")
@@ -31,23 +34,23 @@ public class MyResource {
 	@GET
 	@Path("/daily")
 	@Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_PLAIN})
-	public String getStockDaily(@QueryParam("company") String param ,@QueryParam("u") String name ,@QueryParam("p") String pass) throws Exception{
-		Boolean authDaily=UserAuthentication.authenticate(name,pass);
-		if(authDaily) {
-			return SqlDAL.retrieveDaily(param);
+	public String getStockDaily(@QueryParam("company") String companyName ,@QueryParam("u") String name ,@QueryParam("p") String pass) throws Exception{
+		Boolean auth=UserAuthentication.authenticate(name,pass);
+		if(auth) {
+			return new StockAccess().dailyAccess(companyName).getDetails();
 		}
 		else {
-			return "{'Invalid Credentials':'Try Again'}";
+			return "Invalid Credentials";
 		}
 	}
 
 	@GET
 	@Path("/intra")
 	@Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_PLAIN})
-	public String getStockIntraDaily(@QueryParam("company") String param ,@QueryParam("u") String name ,@QueryParam("p") String pass) throws Exception{
+	public String getStockIntraDaily(@QueryParam("company") String companyName ,@QueryParam("u") String name ,@QueryParam("p") String pass) throws Exception{
 		Boolean authIntraDaily=UserAuthentication.authenticate(name,pass);
 		if(authIntraDaily) {
-			return SqlDAL.retrieveIntraDaily(param);
+			return new StockAccess().intradailyAccess(companyName).getDetails();
 		}
 		else {
 			return "Invalid Credentials";
