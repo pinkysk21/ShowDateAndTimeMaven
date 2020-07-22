@@ -64,8 +64,8 @@ public class SqlDAL {
 			sd.setCompany(company);
 			
 			if(rs.next()) {
-				sd.setDetails(rs.getString(2));
-				sd.setLastAccess(rs.getObject(3, LocalDateTime.class));
+				sd.setDetails(rs.getString(3));
+				sd.setLastAccess(rs.getObject(4, LocalDateTime.class));
 			}
 			return sd;
 		}
@@ -169,8 +169,8 @@ public class SqlDAL {
 			StockDetails sd=new StockDetails();
 			sd.setCompany(company);
 			if(rs.next()) {
-				sd.setIntradetails(rs.getString(2));
-				sd.setIntralastAccess(rs.getObject(3, LocalDateTime.class));
+				sd.setIntradetails(rs.getString(3));
+				sd.setIntralastAccess(rs.getObject(4, LocalDateTime.class));
 				
 			}
 			return sd;
