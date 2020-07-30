@@ -58,14 +58,14 @@ public class SqlDAL {
 	{
 		try {
 			StartConnection();
-			ResultSet rs=st.executeQuery("Select * from StockDetails where company='"+company+"'");
+			ResultSet rs=st.executeQuery("Select * from ResponseDataCache where ID=(select ID from Company where Name='"+company+"') and APIID=(Select ID from API where APIType='Daily') ");
 			
 			StockDetails sd=new StockDetails();
 			sd.setCompany(company);
 			
 			if(rs.next()) {
-				sd.setDetails(rs.getString(2));
-				sd.setLastAccess(rs.getObject(3, LocalDateTime.class));
+				sd.setDetails(rs.getString(3));
+				sd.setLastAccess(rs.getObject(4, LocalDateTime.class));
 			}
 			return sd;
 		}
@@ -95,12 +95,13 @@ public class SqlDAL {
 			//If database information is not present
 			if(isInsert)
 			{
-				sql = "Insert into StockDetails(company,details,lastAccess) values('"+stockDetails.getCompany()+"','"+stockDetails.getDetails()+"',now())";
+				insertCompany(stockDetails);
+				sql = "insert into ResponseDataCache(ID,APIID,DATA,lastAccess) values((select ID from Company where Name='"+stockDetails.getCompany()+"'),(select ID from api where APIType='Daily'),'"+stockDetails.getDetails()+"',now())";
 			}
 			//If database information is expired
 			else
 			{
-				sql = "Update StockDetails set details='"+stockDetails.getDetails()+"',lastAccess=now() where company='"+stockDetails.getCompany()+"'";
+				sql = "Update ResponseDataCache set Data='"+stockDetails.getDetails()+"',lastAccess=now() where ID=(Select ID from Company where Name='"+stockDetails.getCompany()+"') and APIID=(Select ID from API where APIType='IntraDaily')";
 			}
 			st.executeUpdate(sql);
 			
@@ -121,12 +122,13 @@ public class SqlDAL {
 			//If database information is not present
 			if(isInsert)
 			{
-				sql = "Insert into StockDetails(company,intradetails,intralastAccess) values('"+stockDetails.getCompany()+"','"+stockDetails.getIntradetails()+"',now())";
+				insertCompany(stockDetails);
+				sql = "insert into ResponseDataCache(ID,APIID,DATA,lastAccess) values((select ID from Company where Name='"+stockDetails.getCompany()+"'),(select ID from api where APIType='IntraDaily'),'"+stockDetails.getDetails()+"',now())";
 			}
 			//If database information is expired
 			else
 			{
-				sql = "Update StockDetails set intradetails='"+stockDetails.getIntradetails()+"',intralastAccess=now() where company='"+stockDetails.getCompany()+"'";
+				sql = "Update ResponseDataCache set Data='"+stockDetails.getDetails()+"',lastAccess=now() where ID=(Select ID from Company where Name='"+stockDetails.getCompany()+"') and APIID=(Select ID from API where APIType='Daily')";
 			}
 			st.executeUpdate(sql);
 			
@@ -139,16 +141,36 @@ public class SqlDAL {
 		}
 		return;
 	}
+	
+	public static void insertCompany(StockDetails stockDetails) throws SQLException {
+		try {
+			String sql="";
+			sql="Select * from Company where Name='"+stockDetails.getCompany()+"'";
+			rs=st.executeQuery(sql);
+			if(!rs.next())
+			{
+				sql="Insert into Company(Name) values('"+stockDetails.getCompany()+"')";
+				st.executeUpdate(sql);
+			}
+			
+		}
+		finally {
+			
+		}
+		return;
+		
+	}
+	
 	public static  StockDetails retrieveIntraDaily(String company) throws SQLException, ClassNotFoundException {
 		
 		try {
 			StartConnection();
-			rs=st.executeQuery("Select * from StockDetails where company='"+company+"'");
+			rs=st.executeQuery("Select * from ResponseDataCache where ID=(select ID from Company where Name='"+company+"') and APIID=(Select ID from API where APIType='IntraDaily') ");
 			StockDetails sd=new StockDetails();
 			sd.setCompany(company);
 			if(rs.next()) {
-				sd.setIntradetails(rs.getString(2));
-				sd.setIntralastAccess(rs.getObject(3, LocalDateTime.class));
+				sd.setIntradetails(rs.getString(3));
+				sd.setIntralastAccess(rs.getObject(4, LocalDateTime.class));
 				
 			}
 			return sd;
