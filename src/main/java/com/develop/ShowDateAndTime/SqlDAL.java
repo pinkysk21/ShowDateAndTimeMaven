@@ -17,6 +17,7 @@ public class SqlDAL {
 	static ResultSet rs=null;
 	static Connection con = null;
 	static Statement st= null;
+	static PreparedStatement pst=null;
 	static long diff=0;
 	//Class.forName("com.mysql.jdbc.Driver");
 
@@ -26,14 +27,20 @@ public class SqlDAL {
 			StartConnection();
 			
 			String a="";
-			rs=st.executeQuery("Select * from user where username='"+name+"' and apikey='"+pass+"'");
+			pst=con.prepareStatement("Select * from user where username=? and apikey=? ");
+			pst.setString(1,name);
+			pst.setString(2, pass);
+			//rs=st.executeQuery("Select * from user where username='"+name+"' and apikey='"+pass+"'");
+			rs=pst.executeQuery();
 			val=rs.next();
 		}
 		finally {
 			if(con!=null)
 				con.close();
 			if(st!=null)
-			    st.close();		
+			    st.close();	
+			if(pst!=null)
+			    pst.close();	
 		}
 		return val;
 	}
@@ -42,6 +49,7 @@ public class SqlDAL {
 	{
 		Class.forName("com.mysql.jdbc.Driver");
 		con = DriverManager.getConnection(url,uname,password);
+		
 		st=con.createStatement();
 	}
 	
@@ -58,8 +66,8 @@ public class SqlDAL {
 	{
 		try {
 			StartConnection();
-			ResultSet rs=st.executeQuery("Select * from ResponseDataCache where ID=(select ID from Company where Name='"+company+"') and APIID=(Select ID from API where APIType='Daily') ");
-			
+			//ResultSet rs=st.executeQuery("Select * from ResponseDataCache where ID=(select ID from Company where Name='"+company+"') and APIID=(Select ID from API where APIType='Daily') ");
+			ResultSet rs=st.executeQuery("select c.ID,r.APIID,r.Data,r.lastAccess from Company c join ResponseDataCache r on c.ID=r.ID  join api a on r.APIID=a.ID where a.APIType='Daily' and c.Name='"+company+"'");
 			StockDetails sd=new StockDetails();
 			sd.setCompany(company);
 			
