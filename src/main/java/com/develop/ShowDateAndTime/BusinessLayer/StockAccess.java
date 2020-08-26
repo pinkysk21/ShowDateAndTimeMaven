@@ -43,11 +43,11 @@ public class StockAccess {
 		}
 		else {
 			if(stockDetails.getIntralastAccess()!=null) {
-				diff=Duration.between(stockDetails.getLastAccess(), LocalDateTime.now()).toHours();
+				diff=Duration.between(stockDetails.getIntralastAccess(), LocalDateTime.now()).toHours();
 			}
 			
 			//If database information is expired
-			if(stockDetails.getLastAccess()==null || diff>=24) {
+			if(stockDetails.getIntralastAccess()==null || diff>=24) {
 				stockDetails.setIntradetails(AlphaVantageResource.getDailyJsonInfo(stockDetails.getCompany()));
 				SqlDAL.updateOrInsertDaily(false, stockDetails);
 			}

@@ -50,7 +50,7 @@ public class MyResource {
 	public String getStockIntraDaily(@QueryParam("company") String companyName ,@QueryParam("u") String name ,@QueryParam("p") String pass) throws Exception{
 		Boolean authIntraDaily=UserAuthentication.authenticate(name,pass);
 		if(authIntraDaily) {
-			return new StockAccess().intradailyAccess(companyName).getDetails();
+			return new StockAccess().intradailyAccess(companyName).getIntradetails();
 		}
 		else {
 			return "Invalid Credentials";
