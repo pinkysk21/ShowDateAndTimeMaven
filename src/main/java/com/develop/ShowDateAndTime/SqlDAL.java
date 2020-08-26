@@ -19,6 +19,7 @@ public class SqlDAL {
 	static Statement st= null;
 	static PreparedStatement pst=null;
 	static long diff=0;
+	static CallableStatement callStat=null;
 	//Class.forName("com.mysql.jdbc.Driver");
 
 	public static  boolean authenticateUser(String name,String pass) throws SQLException, ClassNotFoundException {
@@ -27,11 +28,16 @@ public class SqlDAL {
 			StartConnection();
 			
 			String a="";
-			pst=con.prepareStatement("Select * from user where username=? and apikey=? ");
-			pst.setString(1,name);
-			pst.setString(2, pass);
+			
+			//pst=con.prepareStatement("Select * from user where username=? and apikey=? ");
+		//	pst.setString(1,name);
+		//	pst.setString(2, pass);
 			//rs=st.executeQuery("Select * from user where username='"+name+"' and apikey='"+pass+"'");
-			rs=pst.executeQuery();
+			 callStat = con.prepareCall("{call GETUSERDETAILS(?,?)}");
+			callStat.setString(1, name);
+			callStat.setString(2, pass);
+			callStat.execute();
+			rs=callStat.getResultSet();
 			val=rs.next();
 		}
 		finally {
@@ -40,7 +46,10 @@ public class SqlDAL {
 			if(st!=null)
 			    st.close();	
 			if(pst!=null)
-			    pst.close();	
+			    pst.close();
+			if(callStat!=null) {
+				callStat.close();
+			}
 		}
 		return val;
 	}
@@ -60,6 +69,10 @@ public class SqlDAL {
 		
 		if(con!=null && !con.isClosed())
 			con.close();
+		
+		if(callStat!=null) {
+			callStat.close();
+		}
 	}
 
 	public static StockDetails retrieveDaily(String company) throws SQLException, ClassNotFoundException 
@@ -67,7 +80,13 @@ public class SqlDAL {
 		try {
 			StartConnection();
 			//ResultSet rs=st.executeQuery("Select * from ResponseDataCache where ID=(select ID from Company where Name='"+company+"') and APIID=(Select ID from API where APIType='Daily') ");
-			ResultSet rs=st.executeQuery("select c.ID,r.APIID,r.Data,r.lastAccess from Company c join ResponseDataCache r on c.ID=r.ID  join api a on r.APIID=a.ID where a.APIType='Daily' and c.Name='"+company+"'");
+			callStat = con.prepareCall("{call RETRIEVEUSERDETAILS(?,?)}");
+			callStat.setString(1, company);
+			callStat.setString(2, "Daily");
+			callStat.execute();
+			rs=callStat.getResultSet();
+			
+		//	ResultSet rs=st.executeQuery("select c.ID,r.APIID,r.Data,r.lastAccess from Company c join ResponseDataCache r on c.ID=r.ID  join api a on r.APIID=a.ID where a.APIType='Daily' and c.Name='"+company+"'");
 			StockDetails sd=new StockDetails();
 			sd.setCompany(company);
 			
@@ -92,6 +111,9 @@ public class SqlDAL {
 		finally {
 			st.close();
 			con.close();
+			if(callStat!=null) {
+				callStat.close();
+			}
 		}
 		return;
 	}
@@ -104,14 +126,24 @@ public class SqlDAL {
 			if(isInsert)
 			{
 				insertCompany(stockDetails);
-				sql = "insert into ResponseDataCache(ID,APIID,DATA,lastAccess) values((select ID from Company where Name='"+stockDetails.getCompany()+"'),(select ID from api where APIType='Daily'),'"+stockDetails.getDetails()+"',now())";
+				CallableStatement callStat = con.prepareCall("{call INSERTUSERDETAILS(?,?,?)}");
+				callStat.setString(1, stockDetails.getCompany());
+				callStat.setString(2, "Daily");
+				callStat.setString(3, stockDetails.getDetails());
+				callStat.execute();
+			//	sql = "insert into ResponseDataCache(ID,APIID,DATA,lastAccess) values((select ID from Company where Name='"+stockDetails.getCompany()+"'),(select ID from api where APIType='Daily'),'"+stockDetails.getDetails()+"',now())";
 			}
 			//If database information is expired
 			else
 			{
-				sql = "Update ResponseDataCache set Data='"+stockDetails.getDetails()+"',lastAccess=now() where ID=(Select ID from Company where Name='"+stockDetails.getCompany()+"') and APIID=(Select ID from API where APIType='IntraDaily')";
+				 callStat = con.prepareCall("{call UPDATEUSERDETAILS(?,?,?)}");
+					callStat.setString(1, stockDetails.getCompany());
+					callStat.setString(2, "Daily");
+					callStat.setString(3, stockDetails.getDetails());
+					callStat.execute();
+			//	sql = "Update ResponseDataCache set Data='"+stockDetails.getDetails()+"',lastAccess=now() where ID=(Select ID from Company where Name='"+stockDetails.getCompany()+"') and APIID=(Select ID from API where APIType='Daily')";
 			}
-			st.executeUpdate(sql);
+		//	st.executeUpdate(sql);
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -131,14 +163,24 @@ public class SqlDAL {
 			if(isInsert)
 			{
 				insertCompany(stockDetails);
-				sql = "insert into ResponseDataCache(ID,APIID,DATA,lastAccess) values((select ID from Company where Name='"+stockDetails.getCompany()+"'),(select ID from api where APIType='IntraDaily'),'"+stockDetails.getDetails()+"',now())";
+				 callStat = con.prepareCall("{call INSERTUSERDETAILS(?,?,?)}");
+				callStat.setString(1, stockDetails.getCompany());
+				callStat.setString(2, "IntraDaily");
+				callStat.setString(3, stockDetails.getIntradetails());
+				callStat.execute();
+				//sql = "insert into ResponseDataCache(ID,APIID,DATA,lastAccess) values((select ID from Company where Name='"+stockDetails.getCompany()+"'),(select ID from api where APIType='IntraDaily'),'"+stockDetails.getDetails()+"',now())";
 			}
 			//If database information is expired
 			else
 			{
-				sql = "Update ResponseDataCache set Data='"+stockDetails.getDetails()+"',lastAccess=now() where ID=(Select ID from Company where Name='"+stockDetails.getCompany()+"') and APIID=(Select ID from API where APIType='Daily')";
+				 callStat = con.prepareCall("{call UPDATEUSERDETAILS(?,?,?)}");
+				callStat.setString(1, stockDetails.getCompany());
+				callStat.setString(2, "IntraDaily");
+				callStat.setString(3, stockDetails.getIntradetails());
+				callStat.execute();
+				//sql = "Update ResponseDataCache set Data='"+stockDetails.getDetails()+"',lastAccess=now() where ID=(Select ID from Company where Name='"+stockDetails.getCompany()+"') and APIID=(Select ID from API where APIType='IntraDaily')";
 			}
-			st.executeUpdate(sql);
+		//	st.executeUpdate(sql);
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -153,12 +195,21 @@ public class SqlDAL {
 	public static void insertCompany(StockDetails stockDetails) throws SQLException {
 		try {
 			String sql="";
-			sql="Select * from Company where Name='"+stockDetails.getCompany()+"'";
-			rs=st.executeQuery(sql);
+			callStat = con.prepareCall("{call GETCOMPANY(?)}");
+			callStat.setString(1, stockDetails.getCompany());
+			
+			callStat.execute();
+			rs=callStat.getResultSet();
+			//sql="Select * from Company where Name='"+stockDetails.getCompany()+"'";
+		//	rs=st.executeQuery(sql);
 			if(!rs.next())
 			{
-				sql="Insert into Company(Name) values('"+stockDetails.getCompany()+"')";
-				st.executeUpdate(sql);
+				callStat = con.prepareCall("{call INSERTCOMPANY(?)}");
+				callStat.setString(1, stockDetails.getCompany());
+				
+				callStat.execute();
+			//	sql="Insert into Company(Name) values('"+stockDetails.getCompany()+"')";
+			//	st.executeUpdate(sql);
 			}
 			
 		}
@@ -173,7 +224,12 @@ public class SqlDAL {
 		
 		try {
 			StartConnection();
-			rs=st.executeQuery("Select * from ResponseDataCache where ID=(select ID from Company where Name='"+company+"') and APIID=(Select ID from API where APIType='IntraDaily') ");
+			callStat = con.prepareCall("{call RETRIEVEUSERDETAILS(?,?)}");
+			callStat.setString(1, company);
+			callStat.setString(2, "IntraDaily");
+			callStat.execute();
+			rs=callStat.getResultSet();
+		//	rs=st.executeQuery("Select * from ResponseDataCache where ID=(select ID from Company where Name='"+company+"') and APIID=(Select ID from API where APIType='IntraDaily') ");
 			StockDetails sd=new StockDetails();
 			sd.setCompany(company);
 			if(rs.next()) {
