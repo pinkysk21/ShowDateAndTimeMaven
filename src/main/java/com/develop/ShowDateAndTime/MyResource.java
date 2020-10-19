@@ -12,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 
 import com.develop.ShowDateAndTime.BusinessLayer.StockAccess;
 import com.develop.ShowDateAndTime.DataAccessObjects.StockDetails;
+import static com.develop.ShowDateAndTime.MyListner.*;
 
 /** Example resource class hosted at the URI path "/myresource"
  */
@@ -35,11 +36,19 @@ public class MyResource {
 	@Path("/daily")
 	@Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_PLAIN})
 	public String getStockDaily(@QueryParam("company") String companyName ,@QueryParam("u") String name ,@QueryParam("p") String pass) throws Exception{
+		watch.start();
 		Boolean auth=UserAuthentication.authenticate(name,pass);
 		if(auth) {
-			return new StockAccess().dailyAccess(companyName).getDetails();
+			logger.info(name);
+			logger.info(pass);
+			String res= new StockAccess().dailyAccess(companyName).getDetails();
+			watch.stop();
+			logger.info("Time required for daily api is "+watch.getTime());
+			return res;
 		}
 		else {
+			watch.stop();
+			logger.info("Time required for invalid credentials -daily is "+watch.getTime());
 			return "Invalid Credentials";
 		}
 	}
@@ -48,11 +57,19 @@ public class MyResource {
 	@Path("/intra")
 	@Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_PLAIN})
 	public String getStockIntraDaily(@QueryParam("company") String companyName ,@QueryParam("u") String name ,@QueryParam("p") String pass) throws Exception{
+		watch.start();
 		Boolean authIntraDaily=UserAuthentication.authenticate(name,pass);
 		if(authIntraDaily) {
-			return new StockAccess().intradailyAccess(companyName).getIntradetails();
+			logger.info(name);
+			logger.info(pass);
+			String res= new StockAccess().intradailyAccess(companyName).getIntradetails();
+			watch.stop();
+			logger.info("Time intradaily required " + watch.getTime());
+			return res;
 		}
 		else {
+			watch.stop();
+			logger.info("Time intradaily required for invalid credentials " + watch.getTime());
 			return "Invalid Credentials";
 		}
 	}

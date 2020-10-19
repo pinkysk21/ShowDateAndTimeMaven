@@ -14,6 +14,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import static com.develop.ShowDateAndTime.MyListner.*;
 
 public class AlphaVantageResource {
 	public static String apikey = "LRHG6PQ9KT10BWFE";
