@@ -5,12 +5,15 @@ import static com.develop.ShowDateAndTime.MyListner.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.develop.ShowDateAndTime.AlphaVantageResource;
 import com.develop.ShowDateAndTime.SqlDAL;
 import com.develop.ShowDateAndTime.DataAccessObjects.StockDetails;
+import com.develop.ShowDateAndTime.MyRequestListener;
 
 public class StockAccess {
-	public StockDetails dailyAccess(String companyName) throws SQLException, ClassNotFoundException {
+	public StockDetails dailyAccess(String companyName,HttpServletRequest request) throws SQLException, ClassNotFoundException {
 		long diff=0;
 		
 		//Fetch daily api details from database
@@ -18,7 +21,7 @@ public class StockAccess {
 		if(stockDetails.getDetails()==null)
 		{
 			stockDetails.setDetails(AlphaVantageResource.getDailyJsonInfo(stockDetails.getCompany()));
-			logger.info("Called AlphaVantage API");
+			logger.info("Called AlphaVantage API"+" "+request.getAttribute("reqId"));
 			SqlDAL.updateOrInsertDaily(true, stockDetails);
 		}
 		else {
@@ -29,23 +32,23 @@ public class StockAccess {
 			//If database information is expired
 			if(stockDetails.getLastAccess()==null || diff>=24) {
 				stockDetails.setDetails(AlphaVantageResource.getDailyJsonInfo(stockDetails.getCompany()));
-				logger.info("Called AlphaVantage API");
+				logger.info("Called AlphaVantage API "+request.getAttribute("reqId"));
 				SqlDAL.updateOrInsertDaily(false, stockDetails);
 			}
 			else {
-				logger.info("From Database- daily");
+				logger.info("From Database- daily "+request.getAttribute("reqId"));
 			}
 		}
 		return stockDetails;
 	}
 	
-	public StockDetails intradailyAccess(String company) throws SQLException, ClassNotFoundException {
+	public StockDetails intradailyAccess(String company,HttpServletRequest request) throws SQLException, ClassNotFoundException {
 		long diff=0;
 		StockDetails stockDetails = SqlDAL.retrieveIntraDaily(company);
 		if(stockDetails.getIntradetails()==null)
 		{
 			stockDetails.setIntradetails(AlphaVantageResource.getDailyJsonInfo(stockDetails.getCompany()));
-			logger.info("Called AlphaVantage API");
+			logger.info("Called AlphaVantage API "+request.getAttribute("reqId"));
 			SqlDAL.updateOrInsertIntraDaily(true, stockDetails);
 		}
 		else {
@@ -56,11 +59,11 @@ public class StockAccess {
 			//If database information is expired
 			if(stockDetails.getIntralastAccess()==null || diff>=24) {
 				stockDetails.setIntradetails(AlphaVantageResource.getDailyJsonInfo(stockDetails.getCompany()));
-				logger.info("Called AlphaVantage API");
+				logger.info("Called AlphaVantage API "+request.getAttribute("reqId"));
 				SqlDAL.updateOrInsertDaily(false, stockDetails);
 			}
 			else {
-				logger.info("From Database- intradaily ");
+				logger.info("From Database- intradaily "+request.getAttribute("reqId"));
 			}
 		}
 		return stockDetails;
